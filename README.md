@@ -6,11 +6,11 @@ como `f(n) = 0,01·n·log2(n) − 0,08·n − 20 = 0`.
 
 ## Integrantes
 
-- Nome 1
-- Nome 2
-- Nome 3
-- Nome 4
-- Nome 5
+- Crystal Barbosa
+- Dyanndra Ribeiro
+- Eduardo Malta
+- Guilherme Eduardo
+- Gilberto Alves
 
 ## Instalação
 
