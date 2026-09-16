@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "metodos-numericos"
+version = "0.1.0"
+description = "Implementações de métodos numéricos para determinação de raízes (Projeto 1ºGQ)"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "Nomes do grupo aqui" },
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
