@@ -1,38 +1,86 @@
-def newton_raphson(f, df, a, b, tol=1e-3, max_iter=100):
-    # Verifica se o intervalo [a, b] contém uma raiz, utilizando o Teorema do Valor Intermediário de Bolzano
-   
-    if f(a) * f(b) >= 0:
-        return False, None ,"o intervalo [a, b] não contém uma raiz, pois f(a) e f(b) têm o mesmo sinal."
+"""Método de Newton-Raphson para determinação de raízes de f(x) = 0."""
 
-    x0 = (a + b) / 2  # Chute inicial como o ponto médio do intervalo
-    contador = 0
+import math
 
-    while True: 
-        # Calcula o valor da função e sua derivada no ponto atual
-        fx0 = f(x0)
-        dfx0 = df(x0)
-
-        # Verifica se a derivada é muito próxima de zero para evitar divisão por zero
-        if (abs(dfx0) < 1e-10):
-            return False, None, "A derivada é muito próxima de zero no ponto inicial, escolha outro intervalo."
-        
-        # Aplica o método de Newton-Raphson para saber o próximo ponto
-        x1 = x0 - fx0 / dfx0
-
-        # Verifica se o método divergiu, ou seja, se o próximo ponto está muito longe do ponto atual
-        if (x1 > 1e10) or (x1 < -1e10):
-            return False, None, "O método divergiu, escolha outro intervalo."
-        
-        # Verifica se a convergência foi alcançada
-        if (abs(x1 - x0) < tol) or (abs(f(x1)) < tol):
-            return True, x1, f"Convergência alcançada na iteração {contador + 1}."
-
-        # Atualiza o ponto atual e incrementa o contador de iterações para motivos de trava de segurança
-        x0 = x1
-        contador += 1
-
-        # Verfica se o numero de iterações atingiu o limite, evitando loops sem término
-        if contador >= max_iter:
-            return False, None, "Número máximo de iterações atingido sem convergência."
+from .resultado import ResultadoRaiz
 
 
+def newton(f, df, x0, tol=1e-6, max_iter=100):
+    """Encontra uma raiz de f pelo método de Newton-Raphson.
+
+    Parâmetros
+    ----------
+    f : callable
+        Função para a qual se busca f(x) = 0.
+    df : callable
+        Derivada de f.
+    x0 : float
+        Chute inicial.
+    tol : float
+        Tolerância do critério de parada: |x_{k+1} - x_k| < tol.
+    max_iter : int
+        Número máximo de iterações (trava de segurança).
+
+    Retorna
+    -------
+    ResultadoRaiz
+        Em caso de falha (derivada nula, divergência, f fora do domínio,
+        max_iter), `convergiu` é False e `mensagem` explica o motivo.
+
+    Levanta
+    -------
+    ValueError
+        Se tol <= 0 ou max_iter <= 0.
+    """
+    if tol <= 0 or max_iter <= 0:
+        raise ValueError("tol e max_iter devem ser positivos.")
+
+    x = float(x0)
+    fx = math.nan
+    k = 0
+    historico = []
+
+    try:
+        fx = f(x)
+        for k in range(1, max_iter + 1):
+            if fx == 0:
+                return ResultadoRaiz(x, fx, k - 1, True, "x já é raiz exata.", historico)
+
+            dfx = df(x)
+            if dfx == 0:
+                return ResultadoRaiz(
+                    x, fx, k - 1, False,
+                    f"Derivada nula em x = {x:.6g}; escolha outro chute inicial.",
+                    historico,
+                )
+
+            # Passo de Newton
+            x_novo = x - fx / dfx
+            if not math.isfinite(x_novo):
+                return ResultadoRaiz(
+                    x, fx, k - 1, False, "O método divergiu (x não finito).", historico
+                )
+
+            fx_novo = f(x_novo)
+            erro = abs(x_novo - x)
+            historico.append({"k": k, "x": x_novo, "fx": fx_novo, "erro": erro})
+            x, fx = x_novo, fx_novo
+
+            if erro < tol or fx == 0:
+                return ResultadoRaiz(
+                    x, fx, k, True,
+                    f"Convergência alcançada: |x_(k+1) - x_k| < tol ({tol:g}).",
+                    historico,
+                )
+    except (ValueError, ZeroDivisionError, OverflowError) as erro_calculo:
+        return ResultadoRaiz(
+            x, fx, len(historico), False,
+            f"Falha ao avaliar f ou f' na iteração {k}: {erro_calculo}",
+            historico,
+        )
+
+    return ResultadoRaiz(
+        x, fx, max_iter, False,
+        "Número máximo de iterações atingido sem convergência.",
+        historico,
+    )
