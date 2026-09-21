@@ -9,8 +9,19 @@ description = "Implementações de métodos numéricos para determinação de ra
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [
-    { name = "Nomes do grupo aqui" },
+    { name = "Crystal Barbosa" },
+    { name = "Dyanndra Ribeiro" },
+    { name = "Eduardo Malta" },
+    { name = "Guilherme Eduardo" },
+    { name = "Gilberto Alves" },
 ]
+
+[project.optional-dependencies]
+notebook = ["jupyter", "matplotlib"]
+test = ["pytest"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
